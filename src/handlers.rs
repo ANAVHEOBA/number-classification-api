@@ -15,7 +15,7 @@ pub async fn classify_number(
                 log::warn!("Number {} out of valid range", n);
                 return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                     number: query.number.clone(),
-                    error: true,  // No message included
+                    error: true,
                 }));
             }
             n
@@ -24,20 +24,8 @@ pub async fn classify_number(
             log::warn!("Failed to parse number {}", query.number);
             return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                 number: query.number.clone(),
-                error: true,  // No message included
+                error: true,
             }));
-            }
-            n
-        },
-        Err(e) => {
-            log::warn!("Failed to parse number {}: {}", query.number, e);
-            return Ok(HttpResponse::BadRequest()
-                .content_type("application/json")
-                .json(ErrorResponse {
-                    number: query.number.clone(),
-                    error: true,
-                    message: "Invalid number format".to_string(),
-                }));
         }
     };
 
@@ -60,7 +48,7 @@ pub async fn classify_number(
         is_perfect,
         properties,
         digit_sum,
-        fun_fact,  
+        fun_fact,
     };
 
     Ok(HttpResponse::Ok().json(response))
