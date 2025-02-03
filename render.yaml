@@ -8,3 +8,9 @@ services:
     envVars:
       - key: PORT
         value: 8080
+      - key: OPENSSL_DIR
+        value: /usr
+      - key: OPENSSL_LIB_DIR
+        value: /usr/lib/x86_64-linux-gnu
+      - key: OPENSSL_INCLUDE_DIR
+        value: /usr/include/openssl
