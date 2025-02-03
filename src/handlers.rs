@@ -11,8 +11,8 @@ pub async fn classify_number(
     // Parse the number
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
-            // Remove the negative number check, only keep the upper limit
-            if n > 1_000_000 {
+            // Only check for upper limit, allow negative numbers
+            if n.abs() > 1_000_000 {
                 log::warn!("Number {} out of valid range", n);
                 return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                     number: query.number.clone(),
@@ -31,10 +31,10 @@ pub async fn classify_number(
     };
 
     // Get number properties
-    let is_prime = service.is_prime(number);
-    let is_perfect = service.is_perfect(number);
-    let properties = service.get_properties(number);
-    let digit_sum = service.digit_sum(number);
+    let is_prime = service.is_prime(number.abs()); // Use absolute value for prime check
+    let is_perfect = service.is_perfect(number.abs()); // Use absolute value for perfect check
+    let properties = service.get_properties(number); // This already handles negative numbers
+    let digit_sum = service.digit_sum(number.abs()); // Use absolute value for digit sum
     
     // Get fun fact
     let fun_fact = match service.get_fun_fact(number).await {
