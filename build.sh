@@ -24,4 +24,3 @@ echo "Build completed!"
 
 
 
-curl -v "https://number-classification-api-11.onrender.com/api/classify-number?number=371"
