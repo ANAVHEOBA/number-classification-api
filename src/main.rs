@@ -7,13 +7,18 @@ mod services;
 
 use services::number_service::NumberService;
 
+// ... existing code ...
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Initialize logger
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    // Use hardcoded values instead of environment variables
-    let port = 8080;
+    // Get port from environment variable for Render compatibility, default to 8080
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8080);
     let host = "0.0.0.0";
 
     log::info!("Starting server at {}:{}", host, port);
