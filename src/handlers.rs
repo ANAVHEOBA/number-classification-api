@@ -2,7 +2,10 @@ use actix_web::{web, HttpResponse, Result};
 use crate::models::{NumberQuery, NumberResponse, ErrorResponse};
 use crate::services::number_service::NumberService;
 
-pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<NumberService>) -> Result<HttpResponse> {
+pub async fn classify_number(
+    query: web::Query<NumberQuery>,
+    service: web::Data<NumberService>,
+) -> Result<HttpResponse> {
     log::info!("Received request for number: {}", query.number);
     
     // Parse the number
@@ -10,13 +13,19 @@ pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<
         Ok(n) => {
             if n < 0 || n > 1_000_000 {
                 log::warn!("Number {} out of valid range", n);
-                return Ok(HttpResponse::BadRequest()
-                    .content_type("application/json")
-                    .json(ErrorResponse {
-                        number: query.number.clone(),
-                        error: true,
-                        message: "Number must be between 0 and 1,000,000".to_string(),
-                    }));
+                return Ok(HttpResponse::BadRequest().json(ErrorResponse {
+                    number: query.number.clone(),
+                    error: true,  // No message included
+                }));
+            }
+            n
+        }
+        Err(_) => {
+            log::warn!("Failed to parse number {}", query.number);
+            return Ok(HttpResponse::BadRequest().json(ErrorResponse {
+                number: query.number.clone(),
+                error: true,  // No message included
+            }));
             }
             n
         },
@@ -51,11 +60,8 @@ pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<
         is_perfect,
         properties,
         digit_sum,
-        fun_fact,
-        success: true,
+        fun_fact,  
     };
 
-    Ok(HttpResponse::Ok()
-        .content_type("application/json")
-        .json(response))
+    Ok(HttpResponse::Ok().json(response))
 }
