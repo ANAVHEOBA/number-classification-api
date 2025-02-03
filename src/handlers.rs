@@ -52,5 +52,7 @@ pub async fn classify_number(
         fun_fact,
     };
 
-    Ok(HttpResponse::Ok().json(response))
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .json(response))
 }
