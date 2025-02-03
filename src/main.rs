@@ -19,6 +19,7 @@ async fn main() -> std::io::Result<()> {
         .parse::<u16>()
         .expect("PORT must be a number");
 
+    println!("Starting server on port {}", port); // Add explicit println for debugging
     log::info!("Starting server at port {}", port);
 
     // Create shared number service
