@@ -29,7 +29,30 @@ pub async fn classify_number(
     let is_perfect = service.is_perfect(number.abs());
     let properties = service.get_properties(number);
     let digit_sum = service.digit_sum(number.abs());
-    let fun_fact = service.get_fun_fact(number).await?;
+    
+    // Handle the potential reqwest error
+    let fun_fact = match service.get_fun_fact(number).await {
+        Ok(fact) => fact,
+        Err(_) => {
+            if service.is_armstrong(number.abs()) {
+                let digits: Vec<i64> = number.abs().to_string()
+                    .chars()
+                    .map(|c| c.to_digit(10).unwrap() as i64)
+                    .collect();
+                let power = digits.len() as u32;
+                
+                format!("{} is an Armstrong number because {}^{} + {}^{} + {}^{} = {}",
+                    number.abs(),
+                    digits[0], power,
+                    digits[1], power,
+                    digits[2], power,
+                    number.abs()
+                )
+            } else {
+                format!("{} is the number you provided", number)
+            }
+        }
+    };
 
     Ok(HttpResponse::Ok().json(NumberResponse {
         number,
