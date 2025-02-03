@@ -5,12 +5,26 @@ use crate::services::number_service::NumberService;
 pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<NumberService>) -> Result<HttpResponse> {
     // Parse the number
     let number = match query.number.parse::<i64>() {
-        Ok(n) => n,
+        Ok(n) => {
+            if n < 0 || n > 1_000_000 {
+                return Ok(HttpResponse::BadRequest()
+                    .content_type("application/json")
+                    .json(ErrorResponse {
+                        number: query.number.clone(),
+                        error: true,
+                        message: "Number must be between 0 and 1,000,000".to_string(),
+                    }));
+            }
+            n
+        },
         Err(_) => {
-            return Ok(HttpResponse::BadRequest().json(ErrorResponse {
-                number: query.number.clone(),
-                error: true,
-            }));
+            return Ok(HttpResponse::BadRequest()
+                .content_type("application/json")
+                .json(ErrorResponse {
+                    number: query.number.clone(),
+                    error: true,
+                    message: "Invalid number format".to_string(),
+                }));
         }
     };
 
@@ -34,7 +48,10 @@ pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<
         properties,
         digit_sum,
         fun_fact,
+        success: true,
     };
 
-    Ok(HttpResponse::Ok().json(response))
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .json(response))
 }

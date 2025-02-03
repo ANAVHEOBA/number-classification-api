@@ -7,6 +7,7 @@ pub struct NumberQuery {
 
 #[derive(Serialize)]
 pub struct NumberResponse {
+    pub success: bool,
     pub number: i64,
     pub is_prime: bool,
     pub is_perfect: bool,
@@ -17,6 +18,7 @@ pub struct NumberResponse {
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
-    pub number: String,
     pub error: bool,
+    pub number: String,
+    pub message: String,
 }
