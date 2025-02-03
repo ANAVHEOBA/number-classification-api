@@ -12,11 +12,12 @@ pub struct NumberResponse {
     pub is_perfect: bool,
     pub properties: Vec<String>,
     pub digit_sum: i64,
-    pub fun_fact: String,  
+    pub fun_fact: String,
 }
 
+// Note: Only number and error fields, in this exact order
 #[derive(Serialize)]
 pub struct ErrorResponse {
+    pub number: String,
     pub error: bool,
-    pub number: String,     
 }

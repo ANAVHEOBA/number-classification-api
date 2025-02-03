@@ -6,14 +6,10 @@ pub async fn classify_number(
     query: web::Query<NumberQuery>,
     service: web::Data<NumberService>,
 ) -> Result<HttpResponse> {
-    log::info!("Received request for number: {}", query.number);
-    
     // Parse the number
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
-            // Only check for upper limit, allow negative numbers
             if n.abs() > 1_000_000 {
-                log::warn!("Number {} out of valid range", n);
                 return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                     number: query.number.clone(),
                     error: true,
@@ -22,7 +18,6 @@ pub async fn classify_number(
             n
         }
         Err(_) => {
-            log::warn!("Failed to parse number {}", query.number);
             return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                 number: query.number.clone(),
                 error: true,
@@ -30,29 +25,18 @@ pub async fn classify_number(
         }
     };
 
-    // Get number properties
-    let is_prime = service.is_prime(number.abs()); // Use absolute value for prime check
-    let is_perfect = service.is_perfect(number.abs()); // Use absolute value for perfect check
-    let properties = service.get_properties(number); // This already handles negative numbers
-    let digit_sum = service.digit_sum(number.abs()); // Use absolute value for digit sum
-    
-    // Get fun fact
-    let fun_fact = match service.get_fun_fact(number).await {
-        Ok(fact) => fact,
-        Err(_) => format!("{} is the number you provided", number),
-    };
+    let is_prime = service.is_prime(number.abs());
+    let is_perfect = service.is_perfect(number.abs());
+    let properties = service.get_properties(number);
+    let digit_sum = service.digit_sum(number.abs());
+    let fun_fact = service.get_fun_fact(number).await?;
 
-    // Create response
-    let response = NumberResponse {
+    Ok(HttpResponse::Ok().json(NumberResponse {
         number,
         is_prime,
         is_perfect,
         properties,
         digit_sum,
         fun_fact,
-    };
-
-    Ok(HttpResponse::Ok()
-        .content_type("application/json")
-        .json(response))
+    }))
 }
