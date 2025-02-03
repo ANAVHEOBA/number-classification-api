@@ -3,10 +3,13 @@ use crate::models::{NumberQuery, NumberResponse, ErrorResponse};
 use crate::services::number_service::NumberService;
 
 pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<NumberService>) -> Result<HttpResponse> {
+    log::info!("Received request for number: {}", query.number);
+    
     // Parse the number
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n < 0 || n > 1_000_000 {
+                log::warn!("Number {} out of valid range", n);
                 return Ok(HttpResponse::BadRequest()
                     .content_type("application/json")
                     .json(ErrorResponse {
@@ -17,7 +20,8 @@ pub async fn classify_number(query: web::Query<NumberQuery>, service: web::Data<
             }
             n
         },
-        Err(_) => {
+        Err(e) => {
+            log::warn!("Failed to parse number {}: {}", query.number, e);
             return Ok(HttpResponse::BadRequest()
                 .content_type("application/json")
                 .json(ErrorResponse {

@@ -74,6 +74,7 @@ impl NumberService {
         let url = format!("http://numbersapi.com/{}/math", n);
         let response = self.http_client.get(&url)
             .header("Content-Type", "text/plain")
+            .timeout(std::time::Duration::from_secs(5))  // Add 5 second timeout
             .send()
             .await?
             .text()
@@ -81,6 +82,7 @@ impl NumberService {
         Ok(response)
     }
 
+    
     pub fn get_properties(&self, n: i64) -> Vec<String> {
         let mut properties = Vec::new();
         

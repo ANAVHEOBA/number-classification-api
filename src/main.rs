@@ -1,6 +1,5 @@
 use actix_web::{web, App, HttpServer};
 use actix_cors::Cors;
-use std::env;
 
 mod handlers;
 mod models;
@@ -13,14 +12,9 @@ async fn main() -> std::io::Result<()> {
     // Initialize logger
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    // Get port from environment variable or use default
-    let port = env::var("PORT")
-        .unwrap_or_else(|_| "8080".to_string())
-        .parse::<u16>()
-        .expect("PORT must be a number");
-
-    // Get host from environment or use default
-    let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    // Use hardcoded values instead of environment variables
+    let port = 8080;
+    let host = "0.0.0.0";
 
     log::info!("Starting server at {}:{}", host, port);
 
