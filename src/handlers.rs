@@ -11,7 +11,8 @@ pub async fn classify_number(
     // Parse the number
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
-            if n < 0 || n > 1_000_000 {
+            // Remove the negative number check, only keep the upper limit
+            if n > 1_000_000 {
                 log::warn!("Number {} out of valid range", n);
                 return Ok(HttpResponse::BadRequest().json(ErrorResponse {
                     number: query.number.clone(),
