@@ -98,7 +98,7 @@ curl "http://localhost:8080/api/classify-number?number=371"
 
 ## 🌐 Deployment
 
-The API is deployed at: `[Your deployed URL here]`
+The API is deployed at: `[https://number-classification-api-7.onrender.com/]`
 
 ## ⚡ Performance
 
