@@ -1,8 +1,9 @@
 services:
   - type: web
     name: number-classification-api
-    env: docker
-    dockerfilePath: ./Dockerfile
+    env: rust
+    buildCommand: cargo build --release
+    startCommand: ./target/release/number-classification-api
     envVars:
       - key: PORT
         value: 8080
