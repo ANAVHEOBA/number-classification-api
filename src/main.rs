@@ -19,8 +19,10 @@ async fn main() -> std::io::Result<()> {
         .parse::<u16>()
         .expect("PORT must be a number");
 
-    println!("Starting server on port {}", port); // Add explicit println for debugging
-    log::info!("Starting server at port {}", port);
+    // Get host from environment or use default
+    let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+
+    log::info!("Starting server at {}:{}", host, port);
 
     // Create shared number service
     let number_service = web::Data::new(NumberService::new());
@@ -37,7 +39,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(number_service.clone())
             .route("/api/classify-number", web::get().to(handlers::classify_number))
     })
-    .bind(("0.0.0.0", port))?
+    .bind((host, port))?
     .run()
     .await
 }
