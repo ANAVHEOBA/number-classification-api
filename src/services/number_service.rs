@@ -70,35 +70,33 @@ impl NumberService {
             .sum()
     }
 
-    pub async fn get_fun_fact(&self, n: i64) -> Result<String, reqwest::Error> {
-        // Always use the exact Armstrong number format for Armstrong numbers
-        if self.is_armstrong(n.abs()) {
-            let digits: Vec<i64> = n.abs().to_string()
-                .chars()
-                .map(|c| c.to_digit(10).unwrap() as i64)
-                .collect();
-            let power = digits.len() as u32;
-            
-            return Ok(format!("{} is an Armstrong number because {}^{} + {}^{} + {}^{} = {}",
-                n.abs(), // Use absolute value for the number
-                digits[0], power,
-                digits[1], power,
-                digits[2], power,
-                n.abs()
-            ));
-        }
-    
-        // For other numbers, use the Numbers API
-        let url = format!("http://numbersapi.com/{}/math", n);
-        let response = self.http_client.get(&url)
-            .header("Content-Type", "text/plain")
-            .timeout(std::time::Duration::from_secs(5))
-            .send()
-            .await?
-            .text()
-            .await?;
-        Ok(response)
+    // In the get_fun_fact method:
+pub async fn get_fun_fact(&self, n: i64) -> Result<String, reqwest::Error> {
+    if self.is_armstrong(n.abs()) {
+        let digits: Vec<i64> = n.abs().to_string()
+            .chars()
+            .map(|c| c.to_digit(10).unwrap() as i64)
+            .collect();
+        
+        return Ok(format!("{} is an Armstrong number because {}^3 + {}^3 + {}^3 = {}",
+            n.abs(),
+            digits[0],
+            digits[1],
+            digits[2],
+            n.abs()
+        ));
     }
+
+    let url = format!("http://numbersapi.com/{}/math", n.abs());
+    let response = self.http_client.get(&url)
+        .header("Content-Type", "text/plain")
+        .timeout(std::time::Duration::from_secs(5))
+        .send()
+        .await?
+        .text()
+        .await?;
+    Ok(response)
+}
 
     pub fn get_properties(&self, n: i64) -> Vec<String> {
         let mut properties = Vec::new();

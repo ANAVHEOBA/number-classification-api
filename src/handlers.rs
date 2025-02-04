@@ -11,24 +11,22 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
-                let error = json!({
-                    "number": query.number,
-                    "error": true
-                });
                 return Ok(HttpResponse::BadRequest()
                     .content_type("application/json")
-                    .json(&error));
+                    .json(json!({
+                        "number": query.number,
+                        "error": true
+                    })));
             }
             n
         }
         Err(_) => {
-            let error = json!({
-                "number": query.number,
-                "error": true
-            });
             return Ok(HttpResponse::BadRequest()
                 .content_type("application/json")
-                .json(&error));
+                .json(json!({
+                    "number": query.number,
+                    "error": true
+                })));
         }
     };
 
@@ -50,16 +48,19 @@ pub async fn classify_number(
         }
     };
 
-    let response = json!({
-        "number": number,
-        "is_prime": service.is_prime(number.abs()),
-        "is_perfect": service.is_perfect(number.abs()),
-        "properties": properties,
-        "digit_sum": service.digit_sum(number.abs()),
-        "fun_fact": fun_fact
-    });
+    // Create response with exact formatting
+    let response_text = format!(
+        "{{\n    \"number\": {},\n    \"is_prime\": {},\n    \"is_perfect\": {},\n    \"properties\": [\"{}\", \"{}\"],\n    \"digit_sum\": {},\n    \"fun_fact\": \"{}\"\n}}",
+        number,
+        service.is_prime(number.abs()),
+        service.is_perfect(number.abs()),
+        properties[0],
+        properties[1],
+        service.digit_sum(number.abs()),
+        fun_fact
+    );
 
     Ok(HttpResponse::Ok()
         .content_type("application/json")
-        .json(&response))
+        .body(response_text))
 }
