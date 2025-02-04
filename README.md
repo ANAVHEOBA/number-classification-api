@@ -149,3 +149,9 @@ Your Name
 
 
 curl -i "https://number-classification-api-12.onrender.com/api/classify-number?number=371"
+
+
+https://number-classification-api-12.onrender.com/api/classify-number
+
+
+https://github.com/ANAVHEOBA/number-classification-api

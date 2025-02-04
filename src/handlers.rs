@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Result};
 use crate::models::{NumberQuery, NumberResponse, ErrorResponse};
 use crate::services::number_service::NumberService;
-use serde_json::{to_string_pretty, json};
+use serde_json::{json, Value};
 
 pub async fn classify_number(
     query: web::Query<NumberQuery>,
@@ -11,60 +11,56 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
-                let error_json = json!({
-                    "number": query.number.clone(),
-                    "error": true
-                });
                 return Ok(HttpResponse::BadRequest()
-                    .insert_header(("Content-Type", "application/json"))
-                    .body(to_string_pretty(&error_json)?));
+                    .content_type("application/json")
+                    .body(format!(
+                        "{{\"number\":\"{}\",\"error\":true}}",
+                        query.number
+                    )));
             }
             n
         }
         Err(_) => {
-            let error_json = json!({
-                "number": query.number.clone(),
-                "error": true
-            });
             return Ok(HttpResponse::BadRequest()
-                .insert_header(("Content-Type", "application/json"))
-                .body(to_string_pretty(&error_json)?));
+                .content_type("application/json")
+                .body(format!(
+                    "{{\"number\":\"{}\",\"error\":true}}",
+                    query.number
+                )));
         }
     };
 
-    let response = NumberResponse {
-        number,
-        is_prime: service.is_prime(number.abs()),
-        is_perfect: service.is_perfect(number.abs()),
-        properties: service.get_properties(number),
-        digit_sum: service.digit_sum(number.abs()),
-        fun_fact: match service.get_fun_fact(number).await {
-            Ok(fact) => fact,
-            Err(_) => {
-                if service.is_armstrong(number.abs()) {
-                    let digits: Vec<i64> = number.abs().to_string()
-                        .chars()
-                        .map(|c| c.to_digit(10).unwrap() as i64)
-                        .collect();
-                    let power = digits.len() as u32;
-                    format!("{} is an Armstrong number because {}^{} + {}^{} + {}^{} = {}",
-                        number.abs(),
-                        digits[0], power,
-                        digits[1], power,
-                        digits[2], power,
-                        number.abs()
-                    )
-                } else {
-                    format!("{} is the number you provided", number)
-                }
+    let properties = service.get_properties(number);
+    let fun_fact = match service.get_fun_fact(number).await {
+        Ok(fact) => fact,
+        Err(_) => {
+            if service.is_armstrong(number.abs()) {
+                format!("{} is an Armstrong number because {}^3 + {}^3 + {}^3 = {}",
+                    number.abs(),
+                    number.to_string().chars().nth(0).unwrap(),
+                    number.to_string().chars().nth(1).unwrap(),
+                    number.to_string().chars().nth(2).unwrap(),
+                    number.abs()
+                )
+            } else {
+                format!("{} is the number you provided", number)
             }
-        },
+        }
     };
 
-    // Format response with proper indentation
-    let json_str = to_string_pretty(&response)?;
-    
+    // Create exact JSON format
+    let response = format!(
+        "{{\n    \"number\": {},\n    \"is_prime\": {},\n    \"is_perfect\": {},\n    \"properties\": [\"{}\", \"{}\"],\n    \"digit_sum\": {},\n    \"fun_fact\": \"{}\"\n}}",
+        number,
+        service.is_prime(number.abs()),
+        service.is_perfect(number.abs()),
+        properties[0],
+        properties[1],
+        service.digit_sum(number.abs()),
+        fun_fact
+    );
+
     Ok(HttpResponse::Ok()
-        .insert_header(("Content-Type", "application/json"))
-        .body(json_str))
+        .content_type("application/json")
+        .body(response))
 }
