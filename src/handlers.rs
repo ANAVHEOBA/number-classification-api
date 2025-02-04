@@ -1,4 +1,5 @@
 use actix_web::{web, HttpResponse, Result};
+use serde_json::json;
 use crate::models::NumberQuery;
 use crate::services::number_service::NumberService;
 
@@ -10,18 +11,20 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
-                let error_response = "{\n    \"number\": \"".to_string() + &query.number + "\",\n    \"error\": true\n}";
                 return Ok(HttpResponse::BadRequest()
-                    .content_type("application/json")
-                    .body(error_response));
+                    .json(json!({
+                        "number": query.number,
+                        "error": true
+                    })));
             }
             n
         }
         Err(_) => {
-            let error_response = "{\n    \"number\": \"".to_string() + &query.number + "\",\n    \"error\": true\n}";
             return Ok(HttpResponse::BadRequest()
-                .content_type("application/json")
-                .body(error_response));
+                .json(json!({
+                    "number": query.number,
+                    "error": true
+                })));
         }
     };
 
@@ -43,26 +46,15 @@ pub async fn classify_number(
         }
     };
 
-    // Create response with exact formatting and indentation
-    let response = format!(
-r#"{{
-    "number": {},
-    "is_prime": {},
-    "is_perfect": {},
-    "properties": ["{}","{}"],
-    "digit_sum": {},
-    "fun_fact": "{}"
-}}"#,
-        number,
-        service.is_prime(number.abs()),
-        service.is_perfect(number.abs()),
-        properties[0],
-        properties[1],
-        service.digit_sum(number.abs()),
-        fun_fact
-    );
+    // Use serde_json::json! macro to create proper JSON response
+    let response = json!({
+        "number": number,
+        "is_prime": service.is_prime(number.abs()),
+        "is_perfect": service.is_perfect(number.abs()),
+        "properties": properties,
+        "digit_sum": service.digit_sum(number.abs()),
+        "fun_fact": fun_fact
+    });
 
-    Ok(HttpResponse::Ok()
-        .content_type("application/json")
-        .body(response))
+    Ok(HttpResponse::Ok().json(response))
 }
