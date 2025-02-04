@@ -71,7 +71,7 @@ impl NumberService {
     }
 
     pub async fn get_fun_fact(&self, n: i64) -> Result<String, reqwest::Error> {
-        // For Armstrong numbers, use the exact specified format
+        // Always use the exact Armstrong number format for Armstrong numbers
         if self.is_armstrong(n.abs()) {
             let digits: Vec<i64> = n.abs().to_string()
                 .chars()
@@ -79,16 +79,15 @@ impl NumberService {
                 .collect();
             let power = digits.len() as u32;
             
-            // Exactly match the required format
             return Ok(format!("{} is an Armstrong number because {}^{} + {}^{} + {}^{} = {}",
-                n.abs(),
+                n.abs(), // Use absolute value for the number
                 digits[0], power,
                 digits[1], power,
                 digits[2], power,
                 n.abs()
             ));
         }
-
+    
         // For other numbers, use the Numbers API
         let url = format!("http://numbersapi.com/{}/math", n);
         let response = self.http_client.get(&url)

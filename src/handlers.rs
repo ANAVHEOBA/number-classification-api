@@ -11,16 +11,16 @@ pub async fn classify_number(
         Ok(n) => {
             if n.abs() > 1_000_000 {
                 return Ok(HttpResponse::BadRequest().json(ErrorResponse {
-                    number: query.number.clone(),
-                    error: true,
+                    number: query.number.clone(),  // Added clone()
+                    error: true
                 }));
             }
             n
         }
         Err(_) => {
             return Ok(HttpResponse::BadRequest().json(ErrorResponse {
-                number: query.number.clone(),
-                error: true,
+                number: query.number.clone(),  // Added clone()
+                error: true
             }));
         }
     };
@@ -30,7 +30,6 @@ pub async fn classify_number(
     let properties = service.get_properties(number);
     let digit_sum = service.digit_sum(number.abs());
     
-    // Handle the potential reqwest error
     let fun_fact = match service.get_fun_fact(number).await {
         Ok(fact) => fact,
         Err(_) => {
@@ -54,12 +53,14 @@ pub async fn classify_number(
         }
     };
 
-    Ok(HttpResponse::Ok().json(NumberResponse {
-        number,
-        is_prime,
-        is_perfect,
-        properties,
-        digit_sum,
-        fun_fact,
-    }))
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .json(NumberResponse {
+            number,
+            is_prime,
+            is_perfect,
+            properties,
+            digit_sum,
+            fun_fact,
+        }))
 }
