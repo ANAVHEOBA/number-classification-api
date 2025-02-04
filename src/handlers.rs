@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Result};
 use crate::models::{NumberQuery, NumberResponse, ErrorResponse};
 use crate::services::number_service::NumberService;
-use serde_json::{json, to_string};
+use serde_json::{to_string_pretty, json};
 
 pub async fn classify_number(
     query: web::Query<NumberQuery>,
@@ -11,22 +11,24 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
+                let error_json = json!({
+                    "number": query.number.clone(),
+                    "error": true
+                });
                 return Ok(HttpResponse::BadRequest()
-                    .content_type("application/json")
-                    .json(ErrorResponse {
-                        number: query.number.clone(),
-                        error: true,
-                    }));
+                    .insert_header(("Content-Type", "application/json"))
+                    .body(to_string_pretty(&error_json)?));
             }
             n
         }
         Err(_) => {
+            let error_json = json!({
+                "number": query.number.clone(),
+                "error": true
+            });
             return Ok(HttpResponse::BadRequest()
-                .content_type("application/json")
-                .json(ErrorResponse {
-                    number: query.number.clone(),
-                    error: true,
-                }));
+                .insert_header(("Content-Type", "application/json"))
+                .body(to_string_pretty(&error_json)?));
         }
     };
 
@@ -59,10 +61,10 @@ pub async fn classify_number(
         },
     };
 
-    // Convert to string and ensure compact format
-    let json_str = to_string(&response)?;
+    // Format response with proper indentation
+    let json_str = to_string_pretty(&response)?;
     
     Ok(HttpResponse::Ok()
-        .content_type("application/json")
+        .insert_header(("Content-Type", "application/json"))
         .body(json_str))
 }

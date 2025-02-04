@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-use indexmap::IndexMap;
-use serde_json::{Value, json};
+use serde_json::{Value, json, Map};
 
 #[derive(Deserialize)]
 pub struct NumberQuery {
@@ -27,15 +26,15 @@ impl Serialize for NumberResponse {
     where
         S: serde::Serializer,
     {
-        let mut map = IndexMap::new();
-        map.insert("number", json!(self.number));
-        map.insert("is_prime", json!(self.is_prime));
-        map.insert("is_perfect", json!(self.is_perfect));
-        // Properly serialize properties as an array
-        map.insert("properties", json!(self.properties));
-        map.insert("digit_sum", json!(self.digit_sum));
-        map.insert("fun_fact", json!(self.fun_fact));
+        // Create ordered map to maintain field order
+        let mut map = Map::new();
+        map.insert("number".to_string(), json!(self.number));
+        map.insert("is_prime".to_string(), json!(self.is_prime));
+        map.insert("is_perfect".to_string(), json!(self.is_perfect));
+        map.insert("properties".to_string(), json!(self.properties));
+        map.insert("digit_sum".to_string(), json!(self.digit_sum));
+        map.insert("fun_fact".to_string(), json!(self.fun_fact));
 
-        map.serialize(serializer)
+        Value::Object(map).serialize(serializer)
     }
 }

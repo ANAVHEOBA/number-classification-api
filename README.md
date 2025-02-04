@@ -146,3 +146,6 @@ Your Name
 - [Numbers API](http://numbersapi.com) for providing number facts
 - Actix-web framework
 - Rust community
+
+
+curl -i "https://number-classification-api-12.onrender.com/api/classify-number?number=371"
