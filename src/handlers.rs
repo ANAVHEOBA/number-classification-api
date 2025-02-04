@@ -1,8 +1,7 @@
 use actix_web::{web, HttpResponse, Result};
 use crate::models::{NumberQuery, NumberResponse, ErrorResponse};
 use crate::services::number_service::NumberService;
-use serde_json::{json, to_string_pretty};
-use indexmap::IndexMap;
+use serde_json::{json, to_string};
 
 pub async fn classify_number(
     query: web::Query<NumberQuery>,
@@ -12,22 +11,22 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
-                let mut map = IndexMap::new();
-                map.insert("number", json!(query.number.clone()));
-                map.insert("error", json!(true));
                 return Ok(HttpResponse::BadRequest()
                     .content_type("application/json")
-                    .body(to_string_pretty(&map)?));
+                    .json(ErrorResponse {
+                        number: query.number.clone(),
+                        error: true,
+                    }));
             }
             n
         }
         Err(_) => {
-            let mut map = IndexMap::new();
-            map.insert("number", json!(query.number.clone()));
-            map.insert("error", json!(true));
             return Ok(HttpResponse::BadRequest()
                 .content_type("application/json")
-                .body(to_string_pretty(&map)?));
+                .json(ErrorResponse {
+                    number: query.number.clone(),
+                    error: true,
+                }));
         }
     };
 
@@ -60,7 +59,10 @@ pub async fn classify_number(
         },
     };
 
+    // Convert to string and ensure compact format
+    let json_str = to_string(&response)?;
+    
     Ok(HttpResponse::Ok()
         .content_type("application/json")
-        .body(to_string_pretty(&response)?))
+        .body(json_str))
 }
