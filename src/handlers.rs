@@ -1,7 +1,6 @@
 use actix_web::{web, HttpResponse, Result};
 use crate::models::NumberQuery;
 use crate::services::number_service::NumberService;
-use serde_json::json;
 
 pub async fn classify_number(
     query: web::Query<NumberQuery>,
@@ -11,22 +10,18 @@ pub async fn classify_number(
     let number = match query.number.parse::<i64>() {
         Ok(n) => {
             if n.abs() > 1_000_000 {
+                let error_response = "{\n    \"number\": \"".to_string() + &query.number + "\",\n    \"error\": true\n}";
                 return Ok(HttpResponse::BadRequest()
                     .content_type("application/json")
-                    .json(json!({
-                        "number": query.number,
-                        "error": true
-                    })));
+                    .body(error_response));
             }
             n
         }
         Err(_) => {
+            let error_response = "{\n    \"number\": \"".to_string() + &query.number + "\",\n    \"error\": true\n}";
             return Ok(HttpResponse::BadRequest()
                 .content_type("application/json")
-                .json(json!({
-                    "number": query.number,
-                    "error": true
-                })));
+                .body(error_response));
         }
     };
 
@@ -48,9 +43,16 @@ pub async fn classify_number(
         }
     };
 
-    // Create response with exact formatting
-    let response_text = format!(
-        "{{\n    \"number\": {},\n    \"is_prime\": {},\n    \"is_perfect\": {},\n    \"properties\": [\"{}\", \"{}\"],\n    \"digit_sum\": {},\n    \"fun_fact\": \"{}\"\n}}",
+    // Create response with exact formatting and indentation
+    let response = format!(
+r#"{{
+    "number": {},
+    "is_prime": {},
+    "is_perfect": {},
+    "properties": ["{}","{}"],
+    "digit_sum": {},
+    "fun_fact": "{}"
+}}"#,
         number,
         service.is_prime(number.abs()),
         service.is_perfect(number.abs()),
@@ -62,5 +64,5 @@ pub async fn classify_number(
 
     Ok(HttpResponse::Ok()
         .content_type("application/json")
-        .body(response_text))
+        .body(response))
 }
